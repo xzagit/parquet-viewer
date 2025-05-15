@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     if (jsonData && jsonData.length > 0) {
       const firstRow = jsonData[0];
       columns = Object.keys(firstRow).map(key => {
-        let type = typeof firstRow[key];
+        let type: string = typeof firstRow[key];
         if (type === 'bigint') {
           type = 'bigint (stringified)'; // Indicate it will be stringified
         } else if (type === 'object') {
@@ -74,18 +74,9 @@ export async function POST(req: NextRequest) {
       });
       console.log("--- Column metadata extracted (rebuilt v4):", columns, "---");
     } else if (jsonData && jsonData.length === 0) {
-        // Attempt to get schema if no data rows
-        console.log("--- No data rows, attempting to get schema for column metadata (rebuilt v4) ---");
-        const schema = parquetSchema({ file: asyncBuffer });
-        if (schema && schema.children) {
-            columns = schema.children.map((col: any) => ({
-                name: col.name,
-                type: col.type || 'unknown' // hyparquet schema might have type info
-            }));
-            console.log("--- Column metadata extracted from schema (rebuilt v4):", columns, "---");
-        } else {
-            console.log("--- Could not extract schema for column metadata (rebuilt v4) ---");
-        }
+      // No data rows, return empty columns array
+      console.log("--- No data rows, returning empty columns array (rebuilt v4) ---");
+      columns = [];
     }
 
     console.log("--- Pre-processing jsonData with JSON.stringify and replacer (rebuilt v4) ---");
